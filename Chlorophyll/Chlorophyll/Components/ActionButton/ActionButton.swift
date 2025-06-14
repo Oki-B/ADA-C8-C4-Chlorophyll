@@ -43,6 +43,8 @@ struct ActionButton: View {
                 .font(.baseMedium)
                 .modifier(ActionButtonLabelTextStyle())
         }
+        .padding()
+
     }
 }
 
