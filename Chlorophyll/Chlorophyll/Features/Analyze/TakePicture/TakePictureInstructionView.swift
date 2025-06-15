@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct TakePictureInstructionView: View {
+    @State private var isPresented = false
+    
     var body: some View {
         VStack {
             StepBar(currentStep: 1)
@@ -65,11 +67,12 @@ struct TakePictureInstructionView: View {
             Spacer()
             Spacer()
             
-            ActionButton(title: .takePicture, action: { })
+            ActionButton(title: .takePicture, action: { isPresented = true })
                 
                 
         }
         .padding()
+        .fullScreenCover(isPresented: $isPresented, content: {TakePictureView()})
     }
 }
 
