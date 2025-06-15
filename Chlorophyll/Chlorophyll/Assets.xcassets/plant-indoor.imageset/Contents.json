@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "indoor-plant.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
