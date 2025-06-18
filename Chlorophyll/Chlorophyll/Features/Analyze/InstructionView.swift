@@ -12,7 +12,7 @@ struct InstructionView: View {
     let steps = InstructionSteps.steps
 
     var body: some View {
-        VStack {
+        NavigationStack {
             Spacer()
 
             VStack(alignment: .leading, spacing: 10) {
@@ -66,14 +66,13 @@ struct InstructionView: View {
 
             Spacer()
             Spacer()
-
-            ActionButton(
-                title: .begin,
-                action: {
-                    // write action code here
-                }
-            )
             
+            NavigationLink(destination: TakePictureView()) {
+                Text("Let's Begin")
+                    .modifier(ActionButtonLabelTextStyle())
+            }
+
+
         }
         .padding()
     }

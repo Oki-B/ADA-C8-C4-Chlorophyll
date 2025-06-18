@@ -9,7 +9,9 @@ import SwiftUI
 
 struct AnswerQuestionView: View {
     @StateObject private var viewModel = AnswerQuestionViewModel()
+    let soilpH: Double?
     @State var optionChoose: Int = 1
+    @State private var navigatetoResult: Bool = false
 
     var body: some View {
         VStack {
@@ -41,9 +43,16 @@ struct AnswerQuestionView: View {
                         .fontWeight(.medium)
                     }
                     
-                    Image(systemName: "cloud.sun.fill")
-                        .font(.system(size: 72))
-                        .foregroundStyle(.orange)
+                    VStack {
+                        Image(systemName: "cloud.sun.fill")
+                            .font(.system(size: 50))
+                            .foregroundStyle(.orange)
+                        
+                        Text("\(viewModel.locationName)")
+                            .foregroundStyle(.darkCharcoal300)
+                            .bold()
+                    }
+
                     
                 } else {
                     Text("Loading...")
@@ -53,7 +62,7 @@ struct AnswerQuestionView: View {
                 //                Text("\(viewModel.temperature)")
             }
             Spacer()
-            Text("Tell us where your plant is located")
+            Text("Help us know your plant's spot")
                 .font(.h3)
                 .foregroundStyle(.darkCharcoal700)
                 .multilineTextAlignment(.center)
@@ -141,6 +150,13 @@ struct AnswerQuestionView: View {
             
             // Check Model Works or not
             Text("Predition Output")
+            
+            if let soilpH = soilpH {
+                Text("Soil pH : \(soilpH)")
+            } else {
+                Text("No prediction yet")
+            }
+            
             if let soilMoisture = viewModel.soilMoisturePrediction, let soilTemperature = viewModel.soilTempPrediction {
                 Text("Soil Moisture :\(String(format: "%.1f", soilMoisture)) / Soil Temperature : \(String(format: "%.1f", soilTemperature))°C")
             } else {
@@ -154,9 +170,12 @@ struct AnswerQuestionView: View {
                     // action for answer color and get prediction
                     
                     // test check model
-                    viewModel.getAllPredictions()
+                    viewModel.getAllPredictions(option: optionChoose)
+                    
+                    navigatetoResult = true
                 }
             )
+            .navigationDestination(isPresented: $navigatetoResult, destination: {LoadingView(humidity: viewModel.humidity, temperature: viewModel.temperature, soilMoisture: viewModel.soilMoisturePrediction, soilTemperature: viewModel.soilTempPrediction, soilpH: soilpH)})
 
         }
         .padding()
@@ -166,5 +185,5 @@ struct AnswerQuestionView: View {
 }
 
 #Preview {
-    AnswerQuestionView()
+    AnswerQuestionView(soilpH: 6.98)
 }

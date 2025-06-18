@@ -17,8 +17,30 @@ class ConfirmColorViewModel: ObservableObject {
     @Published var redInt: Int = 0
     @Published var greenInt: Int = 0
     @Published var blueInt: Int = 0
+    
+//    private var normalPhoto: UIImage?
+//    private var constantColorImage: UIImage?
+//    
+//    var uiImage: UIImage {
+//        if let normalPhoto = normalPhoto {
+//            return normalPhoto
+//        } else if let constantColorImage = constantColorImage {
+//            return constantColorImage
+//        } else {
+//            return UIImage(named: "soil-sample")!
+//        }
+//    }
+//    
+//    init(normalPhoto: UIImage? = nil, constantColorImage: UIImage? = nil) {
+//        self.normalPhoto = normalPhoto
+//        self.constantColorImage = constantColorImage
+//    }
 
-    var uiImage: UIImage = UIImage(named: "soil-sample")!
+    var uiImage: UIImage
+    
+    init(uiImage: UIImage) {
+        self.uiImage = uiImage
+    }
 
     func updateColorAndRGB(from location: CGPoint, in frameSize: CGSize) {
         guard let cgImage = uiImage.cgImage else { return }
@@ -141,6 +163,74 @@ class ConfirmColorViewModel: ObservableObject {
             blue: Double(avgB) / 255.0
         )
     }
+    
+    func getDominantColorInCenterRegion(regionSize: CGFloat = 100, binSize: Int = 10) {
+        guard let cgImage = uiImage.cgImage else { return }
+
+        let width = cgImage.width
+        let height = cgImage.height
+
+        let startX = max(Int((CGFloat(width) - regionSize) / 2), 0)
+        let startY = max(Int((CGFloat(height) - regionSize) / 2), 0)
+        let regionWidth = Int(min(regionSize, CGFloat(width) - CGFloat(startX)))
+        let regionHeight = Int(min(regionSize, CGFloat(height) - CGFloat(startY)))
+
+        let bytesPerPixel = 4
+        let bytesPerRow = bytesPerPixel * regionWidth
+        let totalBytes = regionHeight * bytesPerRow
+
+        let rawData = UnsafeMutablePointer<UInt8>.allocate(capacity: totalBytes)
+        defer { rawData.deallocate() }
+
+        guard let context = CGContext(
+            data: rawData,
+            width: regionWidth,
+            height: regionHeight,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return
+        }
+
+        context.draw(
+            cgImage,
+            in: CGRect(x: -startX, y: -startY, width: width, height: height)
+        )
+
+        var colorFrequency: [UInt32: Int] = [:]
+        let pixelCount = regionWidth * regionHeight
+
+        for i in 0..<pixelCount {
+            let offset = i * bytesPerPixel
+
+            // Ambil RGB dan lakukan binning
+            let r = (Int(rawData[offset]) / binSize) * binSize
+            let g = (Int(rawData[offset + 1]) / binSize) * binSize
+            let b = (Int(rawData[offset + 2]) / binSize) * binSize
+
+            let colorKey = (UInt32(r) << 16) | (UInt32(g) << 8) | UInt32(b)
+            colorFrequency[colorKey, default: 0] += 1
+        }
+
+        if let (dominantKey, _) = colorFrequency.max(by: { $0.value < $1.value }) {
+            let r = Int((dominantKey >> 16) & 0xFF)
+            let g = Int((dominantKey >> 8) & 0xFF)
+            let b = Int(dominantKey & 0xFF)
+
+            redInt = r
+            greenInt = g
+            blueInt = b
+
+            selectedColor = Color(
+                red: Double(r) / 255.0,
+                green: Double(g) / 255.0,
+                blue: Double(b) / 255.0
+            )
+        }
+    }
+
     
     func calculatePH() {
         do {

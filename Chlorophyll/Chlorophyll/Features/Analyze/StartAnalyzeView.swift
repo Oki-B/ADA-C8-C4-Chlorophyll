@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct StartAnalyzeView: View {
+
     var body: some View {
-        VStack {
+        NavigationStack {
             Spacer()
 
             VStack(alignment: .leading, spacing: 10) {
@@ -31,10 +32,11 @@ struct StartAnalyzeView: View {
 
             Spacer()
             Spacer()
-            
-            ActionButton(title: .start, action: {
-                // write action code here
-            })
+
+            NavigationLink(destination: { InstructionView() }) {
+                Text("Start")
+                    .modifier(ActionButtonLabelTextStyle())
+            }
 
         }
         .padding()
