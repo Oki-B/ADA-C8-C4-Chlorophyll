@@ -45,7 +45,7 @@ struct ConfirmColorView: View {
 
     var body: some View {
         NavigationStack {
-            
+
             StepBar(currentStep: 2)
             Spacer()
 
@@ -60,8 +60,7 @@ struct ConfirmColorView: View {
                                 width: geo.size.width,
                                 height: geo.size.height
                             )
-                            //                            .clipped()
-                            .contentShape(Rectangle())
+                            .clipped()
                             .gesture(
                                 viewModel.isManualMode
                                     ? DragGesture(minimumDistance: 0)
@@ -90,7 +89,7 @@ struct ConfirmColorView: View {
                                 }
 
                             }
-                        
+
                         // Color Picker Pointer
                         if viewModel.isManualMode {
                             Circle()
@@ -104,36 +103,37 @@ struct ConfirmColorView: View {
                         }
 
                         HStack {
-                            ZStack (alignment: .leading) {
+                            ZStack(alignment: .leading) {
                                 Rectangle()
-                                    .fill(.gray.opacity(0.2))
+                                    .fill(.neutral400)
                                     .frame(width: 140, height: 36)
                                     .cornerRadius(8)
-                                    
+
                                 HStack {
                                     Rectangle()
                                         .fill(viewModel.selectedColor)
                                         .frame(width: 24, height: 24)
-    //                                    .cornerRadius(8)
-                                    Text("\(viewModel.redInt), \(viewModel.greenInt), \(viewModel.blueInt)")
-                                        .font(.smallMedium)
+
+                                    Text(
+                                        "\(viewModel.redInt), \(viewModel.greenInt), \(viewModel.blueInt)"
+                                    )
+                                    .font(.smallMedium)
                                 }
                                 .padding(.leading)
                             }
 
-                            
                             // Button Color Picker Control
                             Button {
                                 viewModel.isManualMode.toggle()
                             } label: {
                                 ZStack {
                                     Rectangle()
-                                        .fill(.mughalGreen700)
+                                        .fill(.mughalGreen500)
                                         .frame(width: 36, height: 36)
                                         .cornerRadius(8)
                                         .overlay(
                                             Rectangle()
-                                                .fill(.white)
+                                                .fill(.midGreenYellow300)
                                                 .frame(width: 34, height: 34)
                                                 .cornerRadius(8)
                                         )
@@ -142,32 +142,33 @@ struct ConfirmColorView: View {
                                 }
                             }
                         }
-                        .padding()
+                        .padding(8)
 
                     }
-                    .frame(height: geo.size.height)
+
                 }
             }
-
+            .padding()
 
             Spacer()
-            
-
-            if let pH = viewModel.pH {
-                Text("Calculated PH: \(pH.formatted())")
-            } else {
-                Text("Ph not calculated yet")
-            }
 
             // Check ML Model works or not
             ActionButton(title: .next) {
+                // for check model
                 viewModel.calculatePH()
+                if let pH = viewModel.pH {
+                    print("Calculated PH: \(pH.formatted())")
+                }
+                
+                // navigate
                 navigateToNextScreen = true
             }
-            .navigationDestination(isPresented: $navigateToNextScreen, destination: {AnswerQuestionView(soilpH: viewModel.pH)})
-            
+            .navigationDestination(
+                isPresented: $navigateToNextScreen,
+                destination: { AnswerQuestionView(soilpH: viewModel.pH) }
+            )
+
         }
-        
 
         .padding()
         .toolbar {

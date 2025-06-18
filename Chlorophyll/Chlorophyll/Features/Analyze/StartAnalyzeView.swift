@@ -9,8 +9,11 @@ import SwiftUI
 
 struct StartAnalyzeView: View {
 
+    let steps = Instructions.instructions
+
     var body: some View {
         NavigationStack {
+            
             Spacer()
 
             VStack(alignment: .leading, spacing: 10) {
@@ -23,23 +26,36 @@ struct StartAnalyzeView: View {
             }
 
             Spacer()
+
+            VStack(alignment: .leading) {
+                ForEach(steps) { step in
+                    HStack (spacing: 40){
+                        Rectangle()
+                            .frame(width: 80, height: 80)
+                            .foregroundColor(.green)
+
+                        Text(step.description)
+                            .font(.h4)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .foregroundStyle(.darkCharcoal300)
+                            .multilineTextAlignment(.leading)
+
+                            
+                    }
+                    .padding(.horizontal)
+                }
+            }
+
+            Spacer()
             Spacer()
 
-            Image("CalatheaVector")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 329, height: 247)
-
-            Spacer()
-            Spacer()
-
-            NavigationLink(destination: { InstructionView() }) {
-                Text("Start")
+            NavigationLink(destination: { TakePictureView() }) {
+                Text("Let's Begin")
                     .modifier(ActionButtonLabelTextStyle())
             }
 
         }
-        .padding()
+        .padding(.horizontal, 32)
     }
 }
 

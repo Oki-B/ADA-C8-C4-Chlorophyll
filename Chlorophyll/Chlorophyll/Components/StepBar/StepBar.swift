@@ -13,7 +13,7 @@ struct StepBar: View {
     var currentStep: Int = 1 // aktif di step ke-1
     
     let totalSteps = 4
-    let steps: [String] = ["Take Picture", "Pick Color", "Add Data", "Analyze Data"]
+    let steps = Steps.steps
 
     var body: some View {
         HStack(spacing: 0) {
@@ -21,10 +21,10 @@ struct StepBar: View {
                 HStack(alignment: .top, spacing: 0) {
                     VStack {
                         StepCircle(number: index + 1, isActive: index == currentStep - 1, isDone : index < currentStep - 1)
-                        Text(step)
+                        Text(step.title)
                             .font(.smallMedium)
                             .multilineTextAlignment(.center)
-                            .frame(maxWidth: 50)
+                            .frame(width: 50)
                     }
 
                     
@@ -45,11 +45,29 @@ struct StepCircle: View {
     let number: Int
     let isActive: Bool
     let isDone: Bool
+    
+    var color: Color {
+        if isActive {
+            return .midGreenYellow300.opacity(0.4)
+        } else if isDone {
+            return .midGreenYellow700
+        } else {
+           return .clear
+        }
+    }
+    
+    var textColor: Color {
+        if isDone {
+            return .white
+        } else {
+            return .mughalGreen500
+        }
+    }
 
     var body: some View {
         ZStack {
             Circle()
-                .fill(isActive ? .mughalGreen500 : .clear)
+                .fill(color)
                 .frame(width: 32, height: 32)
                 .overlay(
                     Circle()
@@ -57,7 +75,7 @@ struct StepCircle: View {
                 )
 
             Text("\(isDone ? "✓" : "\(number)")")
-                .foregroundColor(isActive ? .white : .mughalGreen500)
+                .foregroundColor(textColor)
                 .fontWeight(.medium)
         }
         .frame(width: 40, height: 40) // spacing antar lingkaran

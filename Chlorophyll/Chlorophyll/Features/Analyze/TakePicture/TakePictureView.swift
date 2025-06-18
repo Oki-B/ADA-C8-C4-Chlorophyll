@@ -131,7 +131,8 @@ struct TakePictureView: View {
             .statusBar(hidden: true)
             .ignoresSafeArea()
             .sheet(isPresented: $instructionShow) {
-                TakePictureInstructionView()
+                TakePictureInstructionView().presentationDetents([.height(680)])
+
             }
             .preferredColorScheme(instructionShow ? .light : .dark)
         }

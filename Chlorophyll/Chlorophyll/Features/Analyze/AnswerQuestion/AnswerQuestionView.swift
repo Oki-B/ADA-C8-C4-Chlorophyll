@@ -67,7 +67,7 @@ struct AnswerQuestionView: View {
                 .foregroundStyle(.darkCharcoal700)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 24)
-
+                .frame(width: 240)
             HStack(spacing: 12) {
 
                 // Option 1
@@ -175,7 +175,7 @@ struct AnswerQuestionView: View {
                     navigatetoResult = true
                 }
             )
-            .navigationDestination(isPresented: $navigatetoResult, destination: {LoadingView(humidity: viewModel.humidity, temperature: viewModel.temperature, soilMoisture: viewModel.soilMoisturePrediction, soilTemperature: viewModel.soilTempPrediction, soilpH: soilpH)})
+//            .navigationDestination(isPresented: $navigatetoResult, destination: {LoadingView(humidity: viewModel.humidity, temperature: viewModel.temperature, soilMoisture: viewModel.soilMoisturePrediction, soilTemperature: viewModel.soilTempPrediction, soilpH: soilpH)})
 
         }
         .padding()
