@@ -29,7 +29,7 @@ struct SimpleCard: View {
                     .foregroundColor(.darkCharcoal500)
                     .padding(.horizontal, 16)
             }
-            .padding()
+//            .padding()
             .background(Color.white)
             .cornerRadius(8) // 🎯 Rounded corners
             .shadow(color: .white, radius: 8, x: 0, y: 4)

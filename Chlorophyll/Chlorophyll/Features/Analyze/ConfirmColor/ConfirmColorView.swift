@@ -8,40 +8,9 @@
 import SwiftUI
 
 struct ConfirmColorView: View {
-
-    let normalPhoto: UIImage?
-    let constantColorImage: UIImage?
-    @StateObject private var viewModel: ConfirmColorViewModel
-    @State private var navigateToNextScreen: Bool = false
-
-    private var uiImage: UIImage {
-        if let normalPhoto = normalPhoto {
-            return normalPhoto
-        } else if let constantColorImage = constantColorImage {
-            return constantColorImage
-        } else {
-            return UIImage(named: "soil-sample")!
-        }
-    }
-
-    // The view initializer for the photos tab view.
-    init(normalPhoto: UIImage? = nil, constantColorImage: UIImage? = nil) {
-        self.constantColorImage = constantColorImage
-        self.normalPhoto = normalPhoto
-        _viewModel = StateObject(
-            wrappedValue: ConfirmColorViewModel(
-                uiImage: {
-                    if let normalPhoto = normalPhoto {
-                        return normalPhoto
-                    } else if let constantColorImage = constantColorImage {
-                        return constantColorImage
-                    } else {
-                        return UIImage(named: "soil-sample")!
-                    }
-                }()
-            )
-        )
-    }
+    @State var showAlert: Bool = false
+    @Environment(\.dismiss) var dismiss
+    @ObservedObject var viewModel: ConfirmColorViewModel
 
     var body: some View {
         NavigationStack {
@@ -53,7 +22,7 @@ struct ConfirmColorView: View {
                 GeometryReader { geo in
                     ZStack(alignment: .bottomTrailing) {
                         // Photo
-                        Image(uiImage: uiImage)
+                        Image(uiImage: viewModel.uiImage)
                             .resizable()
                             .scaledToFill()
                             .frame(
@@ -148,7 +117,6 @@ struct ConfirmColorView: View {
 
                 }
             }
-            .padding()
 
             Spacer()
 
@@ -161,24 +129,40 @@ struct ConfirmColorView: View {
                 }
                 
                 // navigate
-                navigateToNextScreen = true
+                viewModel.navigateToNextView = true
             }
             .navigationDestination(
-                isPresented: $navigateToNextScreen,
+                isPresented: $viewModel.navigateToNextView,
                 destination: { AnswerQuestionView(soilpH: viewModel.pH) }
             )
 
         }
-
-        .padding()
+        .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Text("Close")
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Close") {
+                    showAlert = true
+                }
             }
+        }
+        .alert("Are you sure?", isPresented: $showAlert) {
+            Button("Yes", role: .destructive) {
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {
+            }
+        } message : {
+            Text("Doing this will make your progress reset.")
         }
     }
 }
 
+extension ConfirmColorViewModel {
+    static var preview: ConfirmColorViewModel {
+        ConfirmColorViewModel(normalPhoto: UIImage(named: "soil-sample"))
+    }
+}
+
 #Preview {
-    ConfirmColorView()
+    ConfirmColorView(viewModel: .preview)
 }

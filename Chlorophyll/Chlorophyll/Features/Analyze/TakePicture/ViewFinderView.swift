@@ -15,6 +15,7 @@ struct ViewFinderView: View {
                 image
                     .resizable()
                     .scaledToFit()
+//                    .clipped()
             }
     }
 }

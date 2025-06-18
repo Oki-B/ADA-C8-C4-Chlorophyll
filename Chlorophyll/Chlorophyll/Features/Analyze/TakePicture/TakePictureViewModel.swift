@@ -49,6 +49,7 @@ class TakePictureViewModel: NSObject {
 
     // A Boolean value that indicates whether to show the photos view.
     var photosViewVisible = false
+    
 
     // The photo output readiness coordinator.
     var photoOutputReadinessCoordinator:

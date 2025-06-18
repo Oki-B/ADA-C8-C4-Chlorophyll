@@ -15,54 +15,91 @@ struct LoadingView: View {
     let soilTemperature: Double?
     let soilpH: Double?
     
+    @State private var progress: CGFloat = 0.0
+    @State private var percentage: Int = 0
+    @State private var navigateToResult = false
+    
     var body: some View {
-        VStack {
-            ProgressView("Loading...")
-                .progressViewStyle(CircularProgressViewStyle(tint: .green))
-                .scaleEffect(1.5)
-            Text("Please wait")
-                .font(.caption)
-                .foregroundColor(.gray)
-            
-            Text("\(humidity ?? 0)% humidity")
-                .font(.caption)
-                .foregroundColor(.gray)
-            Text("\(soilMoisture ?? 0)% moisture")
-                .font(.caption)
-                .foregroundColor(.gray)
-            Text("\(soilTemperature ?? 0)°C soil temperature")
-                .font(.caption)
-                .foregroundColor(.gray)
-            Text("\(soilpH ?? 0) soil pH")
-                .font(.caption)
-                .foregroundColor(.gray)
-            
-            if let nitrogenLevel = viewModel.nitrogenLevel, let phosporusLevel = viewModel.phosphorusLevel, let potassiumLevel = viewModel.potassiumLevel {
-                Text("Nitrogen: \(nitrogenLevel)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text("Phosphorus: \(phosporusLevel)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text("Potassium: \(potassiumLevel)")
-                    .font(.caption)
+        NavigationStack {
+            VStack {
+                StepBar(currentStep: 4)
+                    .padding(.top, 32)
+
+                Spacer()
+
+                Text("we're analyzing your plant to give you the best insights! 🌱")
+                    .font(.h2)
+                    .frame(width: 320)
+                    .multilineTextAlignment(.center)
+                    .padding(.bottom, 32)
+
+                ZStack {
+                    // Background circle
+                    Circle()
+                        .stroke(lineWidth: 16)
+                        .foregroundColor(Color.gray.opacity(0.2))
+
+                    // Progress circle
+                    Circle()
+                        .trim(from: 0.0, to: progress)
+                        .stroke(
+                            AngularGradient(
+                                gradient: Gradient(colors: [Color.mughalGreen500, Color.mughalGreen500]),
+                                center: .center
+                            ),
+                            style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .animation(.easeInOut(duration: 1.0), value: progress)
+
+                    // Text percentage
+                    Text("\(percentage) %")
+                        .font(.h1)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.darkCharcoal300)
+                }
+                .frame(width: 150, height: 150)
+                .onAppear {
+                    animateProgress(to: 1.0, duration: 4.5)
+                    
+                    // write to test model
+                    viewModel.predictNutrition(temp:soilMoisture, hum: humidity, moist: soilMoisture)
+                    viewModel.predictHealth(moist: soilMoisture, temp: soilTemperature, hum: humidity, soilPH: soilpH)
+                }
+
+                Spacer()
+                Spacer()
+                Spacer()
             }
-            
-            if let healthStatus = viewModel.plantHealth, let healthScore = viewModel.plantHealthProbability {
-                Text("Health: \(healthStatus) (\(healthScore)%)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+            .navigationDestination(isPresented: $navigateToResult) {
+                if let nitrogenLevel = viewModel.nitrogenLevel, let phosporusLevel = viewModel.phosphorusLevel, let potassiumLevel = viewModel.potassiumLevel, let plantHealth = viewModel.plantHealth {
+                    AnalyzeView(pH: soilpH ?? 0, nitrogen: nitrogenLevel, phosphorus: phosporusLevel, potassium: potassiumLevel, plantHealth: plantHealth)
+                }
+ 
             }
-            
-            ActionButton(title: .submit) {
-                // write to test model
-                viewModel.predictNutrition(temp:soilMoisture, hum: humidity, moist: soilMoisture)
-                viewModel.predictHealth(moist: soilMoisture, temp: soilTemperature, hum: humidity, soilPH: soilpH)
-            }
-            
-            
+            .navigationBarBackButtonHidden(true)
         }
         .padding()
+    }
+    
+    // animate function
+    
+    private func animateProgress(to target: CGFloat, duration: TimeInterval) {
+        let steps = 100
+        let stepDuration = duration / Double(steps)
+
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
+                self.progress = CGFloat(i) / CGFloat(steps)
+                self.percentage = i
+
+                if i == steps {
+                    withAnimation {
+                        self.navigateToResult = true
+                    }
+                }
+            }
+        }
     }
 }
 

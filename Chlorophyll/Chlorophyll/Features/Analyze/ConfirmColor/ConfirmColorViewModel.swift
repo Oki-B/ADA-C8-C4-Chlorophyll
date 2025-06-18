@@ -10,37 +10,38 @@ import UIKit
 import CoreML
 
 class ConfirmColorViewModel: ObservableObject {
+    
+    // for model
     @Published var pH: Double? = nil
-    @Published var selectedColor: Color = .clear
-    @Published var dragLocation: CGPoint = .zero
-    @Published var isManualMode: Bool = false
     @Published var redInt: Int = 0
     @Published var greenInt: Int = 0
     @Published var blueInt: Int = 0
     @Published var hsv: (h: Int, s: Int, v: Int) = (0, 0, 0)
     
-//    private var normalPhoto: UIImage?
-//    private var constantColorImage: UIImage?
-//    
-//    var uiImage: UIImage {
-//        if let normalPhoto = normalPhoto {
-//            return normalPhoto
-//        } else if let constantColorImage = constantColorImage {
-//            return constantColorImage
-//        } else {
-//            return UIImage(named: "soil-sample")!
-//        }
-//    }
-//    
-//    init(normalPhoto: UIImage? = nil, constantColorImage: UIImage? = nil) {
-//        self.normalPhoto = normalPhoto
-//        self.constantColorImage = constantColorImage
-//    }
-
-    var uiImage: UIImage
+    // view control
+    @Published var navigateToNextView: Bool = false
+    @Published var selectedColor: Color = .clear
+    @Published var dragLocation: CGPoint = .zero
+    @Published var isManualMode: Bool = false
     
-    init(uiImage: UIImage) {
-        self.uiImage = uiImage
+    // passing data
+    @Published var normalPhoto: UIImage?
+    @Published var constantColorImage: UIImage?
+    
+    var uiImage: UIImage {
+        if let normalPhoto = normalPhoto {
+            return normalPhoto
+        } else if let constantColorImage = constantColorImage {
+            return constantColorImage
+        } else {
+            return UIImage(named: "soil-sample")!
+        }
+    }
+    
+    
+    init(normalPhoto: UIImage? = nil, constantColorImage: UIImage? = nil) {
+        self.normalPhoto = normalPhoto
+        self.constantColorImage = constantColorImage
     }
 
     func updateColorAndRGB(from location: CGPoint, in frameSize: CGSize) {

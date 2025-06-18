@@ -9,9 +9,12 @@ import SwiftUI
 
 struct AnswerQuestionView: View {
     @StateObject private var viewModel = AnswerQuestionViewModel()
+    @State var showAlert: Bool = false
+    @Environment(\.dismiss) var dismiss
     let soilpH: Double?
     @State var optionChoose: Int = 1
     @State private var navigatetoResult: Bool = false
+    @State private var isDisabled: Bool = true
 
     var body: some View {
         NavigationStack {
@@ -19,56 +22,60 @@ struct AnswerQuestionView: View {
                 StepBar(currentStep: 3)
                 Spacer()
 
-                HStack(spacing: 20) {
-
+                HStack {
                     if let temperature = viewModel.temperature,
                         let humidity = viewModel.humidity,
                         let maxTemp = viewModel.maxTemp,
                         let minTemp = viewModel.minTemp
                     {
-                        Button("text") {
-                            viewModel.calculateIndoorTemperature()
-                            viewModel.calculateIndoorHumidity()
+                        VStack(alignment: .leading) {
+                            Text("\(viewModel.locationName)")
+                                .font(.title3)
+                                .bold()
+//                                .foregroundStyle(.darkCharcoal300)
+                            Text("My Location")
+                                .font(.caption)
+                                .foregroundStyle(.cultured500)
+                                .fontWeight(.semibold)
+                                
+
+                            Text(
+                                "Humidity: \(String(format: "%.1f", humidity))%"
+                            )
+                            .font(.headline)
+                            .fontWeight(.medium)
+                            .padding(.top, 8)
                         }
+                        .padding()
                         
-                        Text("humIndor, \(String(format: "%.1f", viewModel.indoorHumidity ?? 0.0))%, tempIndor, \(String(format: "%.1f", viewModel.indoorTemperature ?? 0.0))°C")
+                        
+                        Spacer()
                         
                         VStack {
                             Text("\(String(format: "%.1f", temperature))°C")
                                 .font(.largeTitle)
-                                .bold()
-                                .foregroundStyle(.darkCharcoal300)
+                                .fontWeight(.semibold)
                             Text(
-                                "min \(String(format: "%.1f", minTemp))° - max \(String(format: "%.1f", maxTemp))°"
+                                "\(String(format: "%.1f", minTemp))° - \(String(format: "%.1f", maxTemp))°"
                             )
-                            .font(.caption)
-                            .foregroundStyle(.darkCharcoal300)
-
-                            Text(
-                                "Hum \(String(format: "%.1f", humidity))%"
-                            )
-                            .font(.title2)
-                            .foregroundStyle(.darkCharcoal300)
-                            .fontWeight(.medium)
+                            .font(.subheadline)
                         }
-
-                        VStack {
-                            Image(systemName: "cloud.sun.fill")
-                                .font(.system(size: 50))
-                                .foregroundStyle(.orange)
-
-                            Text("\(viewModel.locationName)")
-                                .foregroundStyle(.darkCharcoal300)
-                                .bold()
-                        }
+                        .padding()
 
                     } else {
-                        Text("Loading...")
-                            .font(.caption)
-                            .foregroundStyle(.gray)
+                        Spacer()
+                        ProgressView("Fetching Weather Information...")
+                            .padding()
+                        Spacer()
+
                     }
-                    //                Text("\(viewModel.temperature)")
                 }
+                .foregroundStyle(.cultured300)
+                .background(.mughalGreen300)
+                .cornerRadius(24)
+                .shadow(color: .midGreenYellow500,radius: 4)
+                
+                
                 Spacer()
                 Text("Help us know your plant's spot")
                     .font(.h3)
@@ -76,109 +83,85 @@ struct AnswerQuestionView: View {
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 24)
                     .frame(width: 240)
-                HStack(spacing: 12) {
+                HStack(spacing: 24) {
 
                     // Option 1
                     Button {
                         optionChoose = 1
                     } label: {
-                        ZStack {
-                            Rectangle()
-                                .fill(.mughalGreen300)
-                                .cornerRadius(12)
-                                .frame(width: 150, height: 200)
+                        VStack (alignment: .leading) {
+                            Image("plant-indoor")
+                                .resizable()
+                                .scaledToFill()
                                 .clipped()
-                                .overlay {
-                                    VStack(spacing: 12) {
-                                        Image("plant-indoor")
-                                            .resizable()
-                                            .scaledToFill()
-                                            .clipped()
-                                            .frame(width: 150)
-
-                                        Text("Indoor")
-                                            .font(.baseMedium)
-                                            .foregroundStyle(
-                                                optionChoose == 1
-                                                    ? .cultured300
-                                                    : .darkCharcoal500
-                                            )
-                                            .padding(.bottom)
-                                    }
-                                    .frame(width: 148, height: 198)
-                                    .background(optionChoose == 1 ? .clear : .white)
-                                    .cornerRadius(12)
-                                }
+                                .frame(width: 125, height: 125)
+                                .cornerRadius(12)
+                                .padding(.top, 8)
+                            
+                            VStack (alignment: .leading) {
+                                Text("Indoor")
+                                    .font(.h1)
+                                    .foregroundStyle(.darkCharcoal700)
+                                Text("My plant seeing all from inside")
+                                    .font(.custom("Manrope-Regular", size: 8))
+                                    .foregroundStyle(.darkCharcoal300)
+                            }
+                            .frame( width: 125, alignment: .leading)
+                            .padding(.bottom, 20)
 
                         }
-
+                        .padding(.horizontal,6)
+                        .background(.cultured300)
+                        .cornerRadius(12)
+                        .shadow(color: .mughalGreen500,radius: optionChoose == 1 ? 4 : 0)
                     }
 
                     // Option 2
                     Button {
                         optionChoose = 2
                     } label: {
-                        ZStack {
-                            Rectangle()
-                                .fill(.mughalGreen300)
-                                .cornerRadius(12)
-                                .frame(width: 150, height: 200)
+                        VStack (alignment: .leading) {
+                            Image("plant-outdoor")
+                                .resizable()
+                                .scaledToFill()
                                 .clipped()
-                                .overlay {
-                                    VStack(spacing: 12) {
-                                        Image("plant-outdoor")
-                                            .resizable()
-                                            .scaledToFill()
-                                            .clipped()
-                                            .frame(width: 150)
+                                .frame(width: 125, height: 125)
+                                .cornerRadius(12)
+                                .padding(.top, 8)
+                            
+                            VStack (alignment: .leading) {
+                                Text("Outdoor")
+                                    .font(.h1)
+                                    .foregroundStyle(.darkCharcoal700)
+                                Text("My plant have enough sunlight")
+                                    .font(.custom("Manrope-Regular", size: 8))
+                                    .foregroundStyle(.darkCharcoal300)
 
-                                        Text("Outdoor")
-                                            .font(.baseMedium)
-                                            .foregroundStyle(
-                                                optionChoose == 2
-                                                    ? .cultured300
-                                                    : .darkCharcoal500
-                                            )
-                                            .padding(.bottom)
-                                    }
-                                    .frame(width: 148, height: 198)
-                                    .background(optionChoose == 2 ? .clear : .white)
-                                    .cornerRadius(12)
-                                }
+                            }
+                            .frame( width: 125, alignment: .leading)
+                            .padding(.bottom, 20)
 
                         }
-
+                        .padding(.horizontal,6)
+                        .background(.cultured300)
+                        .cornerRadius(12)
+                        .shadow(color: .mughalGreen500,radius: optionChoose == 2 ? 4 : 0)
                     }
-
                 }
-                .frame(maxWidth: 280)
 
                 Spacer()
                 Spacer()
-
-                // Check Model Works or not
-                Text("Predition Output")
-
-                if let soilpH = soilpH {
-                    Text("Soil pH : \(soilpH)")
-                } else {
-                    Text("No prediction yet")
-                }
-
-                if let soilMoisture = viewModel.soilMoisturePrediction,
-                    let soilTemperature = viewModel.soilTempPrediction
-                {
-                    Text(
-                        "Soil Moisture :\(String(format: "%.1f", soilMoisture)) / Soil Temperature : \(String(format: "%.1f", soilTemperature))°C"
-                    )
-                } else {
-                    Text("No prediction yet")
-                }
 
                 ActionButton(
                     title: .submit,
                     action: {
                         // action for answer color and get prediction
+                        if let soilpH = soilpH, let soilMoisture = viewModel.soilMoisturePrediction,
+                           let soilTemperature = viewModel.soilTempPrediction {
+                            print("Soil pH : \(soilpH) Soil Moisture :\(String(format: "%.1f", soilMoisture)) / Soil Temperature : \(String(format: "%.1f", soilTemperature))°C")
+                        } else {
+                            print("No prediction yet")
+                        }
 
                         // test check model
                         viewModel.getAllPredictions(option: optionChoose)
@@ -186,6 +169,7 @@ struct AnswerQuestionView: View {
                         navigatetoResult = true
                     }
                 )
+                .disabled(viewModel.temperature == nil)
                 .navigationDestination(
                     isPresented: $navigatetoResult,
                     destination: {
@@ -202,7 +186,23 @@ struct AnswerQuestionView: View {
             }
             .padding()
         }
-
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Close") {
+                    showAlert = true
+                }
+            }
+        }
+        .alert("Are you sure?", isPresented: $showAlert) {
+            Button("Yes", role: .destructive) {
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {
+            }
+        } message : {
+            Text("Doing this will make your progress reset.")
+        }
 
     }
 

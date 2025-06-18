@@ -30,9 +30,13 @@ struct StartAnalyzeView: View {
             VStack(alignment: .leading) {
                 ForEach(steps) { step in
                     HStack (spacing: 40){
-                        Rectangle()
-                            .frame(width: 80, height: 80)
+                        Image(step.image)
+                            .resizable()
                             .foregroundColor(.green)
+                            .frame(width: 80, height: 80)
+
+                        
+
 
                         Text(step.description)
                             .font(.h4)

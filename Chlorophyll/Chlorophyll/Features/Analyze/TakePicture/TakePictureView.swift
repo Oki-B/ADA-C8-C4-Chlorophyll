@@ -54,7 +54,6 @@ struct TakePictureView: View {
                     .padding()
 
                 } else {
-
                     GeometryReader { geometry in
                         ZStack {
                             ViewFinderView(image: $model.viewfinderImage)
@@ -62,39 +61,38 @@ struct TakePictureView: View {
                                     width: geometry.size.width,
                                     height: geometry.size.height
                                 )
-                                .edgesIgnoringSafeArea(.all)
 
-                            VStack(spacing: 0) {
-                                StepBar(currentStep: 1)
-                                    .padding(.top, 10)
-                                Spacer()
-                            }
                             Circle()
                                 .stroke(
                                     style: StrokeStyle(
-                                        lineWidth: 3,
-                                        dash: [6]
+                                        lineWidth: 2,
+                                        dash: [16]
                                     )
                                 )
-                                .stroke(Color.green, lineWidth: 3)
-                                .frame(width: 200, height: 200)
+                                .foregroundStyle(Color.green)
+                                .frame(width: 240, height: 240)
                                 .position(
                                     x: geometry.size.width / 2,
-                                    y: geometry.size.height / 2 - 50
+                                    y: geometry.size.height / 2
                                 )
 
-                            VStack {
+                            VStack(spacing: 0) {
+                                StepBar(currentStep: 1)
+                                    .padding(.top, 30)
+
                                 Spacer()
+                                
                                 bottomBarView
                                     .navigationDestination(
                                         isPresented: $model.camera
                                             .photosViewVisible,
                                         destination: {
-                                            ConfirmColorView(
+                                            ConfirmColorView(viewModel: ConfirmColorViewModel(
                                                 normalPhoto: model.camera
                                                     .normalPhoto,
                                                 constantColorImage: model.camera
                                                     .constantColorPhoto
+                                                )
                                             )
                                         }
                                     )
@@ -108,10 +106,10 @@ struct TakePictureView: View {
                                             "The constant color algorithm requires flash. Please make sure to set flashMode to .on or .auto."
                                         )
                                     }
+                                    .padding(.bottom, 30)
+                                
                             }
-
                         }
-
                     }
 
                 }
@@ -127,25 +125,26 @@ struct TakePictureView: View {
                 }
             }
             .onAppear { instructionShow = true }
+            .onDisappear {
+                model.camera.stop()
+            }
             .navigationBarHidden(true)
             .statusBar(hidden: true)
-            .ignoresSafeArea()
             .sheet(isPresented: $instructionShow) {
-                TakePictureInstructionView().presentationDetents([.height(680)])
-
+                TakePictureInstructionView().presentationDetents([.height(700)])
             }
             .preferredColorScheme(instructionShow ? .light : .dark)
+
         }
     }
-
 
     var bottomBarView: some View {
         ZStack(alignment: .center) {
             HStack {
                 // Kiri: Tombol Tutorial
                 Button("Tutorial", action: { dismiss() })
-                .foregroundColor(.white)
-                .padding(.leading, 20)
+                    .foregroundColor(.white)
+                    .padding(.leading, 15)
 
                 Spacer()
 
@@ -164,7 +163,7 @@ struct TakePictureView: View {
                     )
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 6)
             .padding(.bottom, 30)
 
             // Tombol shutter benar-benar center
@@ -177,7 +176,6 @@ struct TakePictureView: View {
         }
 
     }
-
 
     private func takePhoto() {
         if constantColorEnabled && (flashEnabled == false) {
@@ -192,78 +190,6 @@ struct TakePictureView: View {
     }
 }
 
-struct ShutterButton: View {
-    private let action: () -> Void
-
-    @Environment(\.isEnabled) private var isEnabled
-
-    init(action: @escaping () -> Void) {
-        self.action = action
-    }
-
-    var body: some View {
-        Button {
-            action()
-        } label: {
-            Label {
-                Text("Take Photo")
-            } icon: {
-                ZStack {
-                    Circle()
-                        .strokeBorder(.white, lineWidth: !isEnabled ? 3 : 1)
-                        .frame(
-                            width: !isEnabled ? 65 : 62,
-                            height: !isEnabled ? 65 : 62
-                        )
-                        .animation(
-                            .interpolatingSpring(
-                                mass: 2.0,
-                                stiffness: 100.0,
-                                damping: 10,
-                                initialVelocity: 0
-                            ),
-                            value: !isEnabled
-                        )
-                    Circle()
-                        .fill(.white)
-                        .frame(
-                            width: !isEnabled ? 55 : 50,
-                            height: !isEnabled ? 55 : 50
-                        )
-                        .animation(
-                            .interpolatingSpring(
-                                mass: 2.0,
-                                stiffness: 100.0,
-                                damping: 10,
-                                initialVelocity: 0
-                            ),
-                            value: !isEnabled
-                        )
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .labelStyle(.iconOnly)
-    }
-}
-
-struct CameraOptionToggle: View {
-    private let textLabel: String
-    @Binding private var toggleValue: Bool
-
-    init(textLabel: String, toggleValue: Binding<Bool>) {
-        self.textLabel = textLabel
-        self._toggleValue = toggleValue
-    }
-
-    var body: some View {
-        HStack {
-            Text(textLabel).font(.caption).padding(.trailing, 4)
-                .foregroundColor(.white)
-            Toggle("", isOn: $toggleValue).fixedSize().labelsHidden()
-        }
-    }
-}
 
 #Preview {
     TakePictureView()
