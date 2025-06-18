@@ -14,6 +14,7 @@ enum ActionButtonTitle {
     case next
     case submit
     case save
+    case understand
     
     var title: String {
         switch self {
@@ -29,6 +30,8 @@ enum ActionButtonTitle {
             return "Submit"
         case .save:
             return "Save"
+        case .understand:
+            return "I Understand"
         }
     }
 }

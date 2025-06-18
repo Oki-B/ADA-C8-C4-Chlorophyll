@@ -8,31 +8,59 @@
 import SwiftUI
 
 struct ConfirmColorView: View {
-    @StateObject private var viewModel = ConfirmColorViewModel()
+
+    let normalPhoto: UIImage?
+    let constantColorImage: UIImage?
+    @StateObject private var viewModel: ConfirmColorViewModel
+    @State private var navigateToNextScreen: Bool = false
+
+    private var uiImage: UIImage {
+        if let normalPhoto = normalPhoto {
+            return normalPhoto
+        } else if let constantColorImage = constantColorImage {
+            return constantColorImage
+        } else {
+            return UIImage(named: "soil-sample")!
+        }
+    }
+
+    // The view initializer for the photos tab view.
+    init(normalPhoto: UIImage? = nil, constantColorImage: UIImage? = nil) {
+        self.constantColorImage = constantColorImage
+        self.normalPhoto = normalPhoto
+        _viewModel = StateObject(
+            wrappedValue: ConfirmColorViewModel(
+                uiImage: {
+                    if let normalPhoto = normalPhoto {
+                        return normalPhoto
+                    } else if let constantColorImage = constantColorImage {
+                        return constantColorImage
+                    } else {
+                        return UIImage(named: "soil-sample")!
+                    }
+                }()
+            )
+        )
+    }
 
     var body: some View {
-        VStack {
+        NavigationStack {
+            
             StepBar(currentStep: 2)
-
-            Spacer()
-
-            Text(
-                "Use the photo to pick soil color that most closely matches your sample."
-            )
-            .font(.h3)
-            .foregroundStyle(.darkCharcoal700)
-            .multilineTextAlignment(.center)
-
             Spacer()
 
             VStack(alignment: .center) {
-                ZStack(alignment: .bottomTrailing) {
-                    GeometryReader { geo in
-                        Image(uiImage: viewModel.uiImage)
+                GeometryReader { geo in
+                    ZStack(alignment: .bottomTrailing) {
+                        // Photo
+                        Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: geo.size.width, height: 300)
-                            .clipped()
+                            .frame(
+                                width: geo.size.width,
+                                height: geo.size.height
+                            )
+                            //                            .clipped()
                             .contentShape(Rectangle())
                             .gesture(
                                 viewModel.isManualMode
@@ -47,13 +75,23 @@ struct ConfirmColorView: View {
                                         } : nil
                             )
                             .onAppear {
-                                viewModel.getAverageColorInCenterRegion()
-                                viewModel.dragLocation = CGPoint(
-                                    x: geo.size.width / 2,
-                                    y: geo.size.height / 2
-                                )
-                            }
+                                viewModel.getDominantColorInCenterRegion()
 
+                                DispatchQueue.main.async {
+                                    let center = CGPoint(
+                                        x: geo.size.width / 2,
+                                        y: geo.size.height / 2
+                                    )
+                                    viewModel.dragLocation = center
+                                    viewModel.updateColorAndRGB(
+                                        from: center,
+                                        in: geo.size
+                                    )
+                                }
+
+                            }
+                        
+                        // Color Picker Pointer
                         if viewModel.isManualMode {
                             Circle()
                                 .strokeBorder(Color.white, lineWidth: 2)
@@ -64,63 +102,79 @@ struct ConfirmColorView: View {
                                 .position(viewModel.dragLocation)
                                 .shadow(radius: 3)
                         }
-                    }
-                    .frame(height: 300)
 
-                    Button {
-                        viewModel.isManualMode.toggle()
-                    } label: {
-                        ZStack {
-                            Rectangle()
-                                .fill(.mughalGreen700)
-                                .frame(width: 36, height: 36)
-                                .cornerRadius(8)
-                                .overlay(
+                        HStack {
+                            ZStack (alignment: .leading) {
+                                Rectangle()
+                                    .fill(.gray.opacity(0.2))
+                                    .frame(width: 140, height: 36)
+                                    .cornerRadius(8)
+                                    
+                                HStack {
                                     Rectangle()
-                                        .fill(.white)
-                                        .frame(width: 34, height: 34)
+                                        .fill(viewModel.selectedColor)
+                                        .frame(width: 24, height: 24)
+    //                                    .cornerRadius(8)
+                                    Text("\(viewModel.redInt), \(viewModel.greenInt), \(viewModel.blueInt)")
+                                        .font(.smallMedium)
+                                }
+                                .padding(.leading)
+                            }
+
+                            
+                            // Button Color Picker Control
+                            Button {
+                                viewModel.isManualMode.toggle()
+                            } label: {
+                                ZStack {
+                                    Rectangle()
+                                        .fill(.mughalGreen700)
+                                        .frame(width: 36, height: 36)
                                         .cornerRadius(8)
-                                )
-                            Image(systemName: "eyedropper")
-                                .foregroundStyle(.mughalGreen700)
+                                        .overlay(
+                                            Rectangle()
+                                                .fill(.white)
+                                                .frame(width: 34, height: 34)
+                                                .cornerRadius(8)
+                                        )
+                                    Image(systemName: "eyedropper")
+                                        .foregroundStyle(.mughalGreen700)
+                                }
+                            }
                         }
+                        .padding()
+
                     }
-                    .padding()
+                    .frame(height: geo.size.height)
                 }
             }
 
-            VStack(alignment: .center, spacing: 4) {
-                Text("Your Soil Color")
-                    .font(.h4)
 
-                Rectangle()
-                    .fill(viewModel.selectedColor)
-                    .frame(height: 42)
-                    .cornerRadius(8)
-
-                Text(
-                    "R: \(viewModel.redInt)  G: \(viewModel.greenInt)  B: \(viewModel.blueInt)"
-                )
-                .font(.caption)
-                .foregroundStyle(.gray)
-            }
-
-            Spacer()
             Spacer()
             
+
             if let pH = viewModel.pH {
                 Text("Calculated PH: \(pH.formatted())")
             } else {
                 Text("Ph not calculated yet")
             }
-   
-            
+
             // Check ML Model works or not
             ActionButton(title: .next) {
                 viewModel.calculatePH()
+                navigateToNextScreen = true
+            }
+            .navigationDestination(isPresented: $navigateToNextScreen, destination: {AnswerQuestionView(soilpH: viewModel.pH)})
+            
+        }
+        
+
+        .padding()
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Text("Close")
             }
         }
-        .padding()
     }
 }
 
