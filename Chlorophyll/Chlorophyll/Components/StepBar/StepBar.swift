@@ -7,13 +7,19 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct StepBar: View {
     var currentStep: Int = 1 // aktif di step ke-1
     
     let totalSteps = 4
-    let steps: [String] = ["Take Picture", "Pick Color", "Add Data", "Analyze Data"]
+    let steps = Steps.steps
+    
+    private var textColor: Color {
+        if currentStep == 1 {
+            Color.cultured300
+        } else {
+            Color.darkCharcoal700
+        }
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -21,10 +27,11 @@ struct StepBar: View {
                 HStack(alignment: .top, spacing: 0) {
                     VStack {
                         StepCircle(number: index + 1, isActive: index == currentStep - 1, isDone : index < currentStep - 1)
-                        Text(step)
+                        Text(step.title)
                             .font(.smallMedium)
                             .multilineTextAlignment(.center)
-                            .frame(maxWidth: 50)
+                            .frame(width: 50)
+                            .foregroundStyle(index == currentStep - 1 ? .midGreenYellow700 : textColor)
                     }
 
                     
@@ -38,6 +45,7 @@ struct StepBar: View {
                 }
             }
         }
+        .padding(.vertical, 12)
     }
 }
 
@@ -45,19 +53,41 @@ struct StepCircle: View {
     let number: Int
     let isActive: Bool
     let isDone: Bool
+    
+    var color: Color {
+        if isActive {
+            if number == 1 {
+                return .cultured300
+            } else {
+                return .midGreenYellow300.opacity(0.4)
+            }
+        } else if isDone {
+            return .midGreenYellow500
+        } else {
+           return .cultured300
+        }
+    }
+    
+    var textColor: Color {
+        if isDone {
+            return .white
+        } else {
+            return .mughalGreen500
+        }
+    }
 
     var body: some View {
         ZStack {
             Circle()
-                .fill(isActive ? .mughalGreen500 : .clear)
+                .fill(color)
                 .frame(width: 32, height: 32)
                 .overlay(
                     Circle()
-                        .stroke(.mughalGreen500, lineWidth: 1.25)
+                        .stroke(.midGreenYellow700, lineWidth: 1.25)
                 )
 
             Text("\(isDone ? "✓" : "\(number)")")
-                .foregroundColor(isActive ? .white : .mughalGreen500)
+                .foregroundColor(textColor)
                 .fontWeight(.medium)
         }
         .frame(width: 40, height: 40) // spacing antar lingkaran
@@ -65,6 +95,6 @@ struct StepCircle: View {
 }
 
 #Preview {
-    StepBar(currentStep: 2)
+    StepBar(currentStep: 1)
 }
 

@@ -10,36 +10,41 @@ import UIKit
 import CoreML
 
 class ConfirmColorViewModel: ObservableObject {
+    
+    // for model
     @Published var pH: Double? = nil
-    @Published var selectedColor: Color = .clear
-    @Published var dragLocation: CGPoint = .zero
-    @Published var isManualMode: Bool = false
     @Published var redInt: Int = 0
     @Published var greenInt: Int = 0
     @Published var blueInt: Int = 0
+    @Published var hsv: (h: Int, s: Int, v: Int) = (0, 0, 0)
+    @Published var nPrediction: String? = nil
+    @Published var pPrediction: String? = nil
+    @Published var kPrediction: String? = nil
     
-//    private var normalPhoto: UIImage?
-//    private var constantColorImage: UIImage?
-//    
-//    var uiImage: UIImage {
-//        if let normalPhoto = normalPhoto {
-//            return normalPhoto
-//        } else if let constantColorImage = constantColorImage {
-//            return constantColorImage
-//        } else {
-//            return UIImage(named: "soil-sample")!
-//        }
-//    }
-//    
-//    init(normalPhoto: UIImage? = nil, constantColorImage: UIImage? = nil) {
-//        self.normalPhoto = normalPhoto
-//        self.constantColorImage = constantColorImage
-//    }
-
-    var uiImage: UIImage
+    // view control
+    @Published var navigateToNextView: Bool = false
+    @Published var selectedColor: Color = .clear
+    @Published var dragLocation: CGPoint = .zero
+    @Published var isManualMode: Bool = false
     
-    init(uiImage: UIImage) {
-        self.uiImage = uiImage
+    // passing data
+    @Published var normalPhoto: UIImage?
+    @Published var constantColorImage: UIImage?
+    
+    var uiImage: UIImage {
+        if let normalPhoto = normalPhoto {
+            return normalPhoto
+        } else if let constantColorImage = constantColorImage {
+            return constantColorImage
+        } else {
+            return UIImage(named: "soil-sample")!
+        }
+    }
+    
+    
+    init(normalPhoto: UIImage? = nil, constantColorImage: UIImage? = nil) {
+        self.normalPhoto = normalPhoto
+        self.constantColorImage = constantColorImage
     }
 
     func updateColorAndRGB(from location: CGPoint, in frameSize: CGSize) {
@@ -96,6 +101,9 @@ class ConfirmColorViewModel: ObservableObject {
         redInt = Int(rawData[0])
         greenInt = Int(rawData[1])
         blueInt = Int(rawData[2])
+        
+        hsv = rgbToHSV(r: redInt, g: greenInt, b: blueInt)
+        
         selectedColor = Color(
             red: Double(redInt) / 255.0,
             green: Double(greenInt) / 255.0,
@@ -222,6 +230,8 @@ class ConfirmColorViewModel: ObservableObject {
             redInt = r
             greenInt = g
             blueInt = b
+            
+            hsv = rgbToHSV(r: r, g: g, b: b)
 
             selectedColor = Color(
                 red: Double(r) / 255.0,
@@ -230,22 +240,72 @@ class ConfirmColorViewModel: ObservableObject {
             )
         }
     }
+    
+    
+    func rgbToHSV(r: Int, g: Int, b: Int) -> (h: Int, s: Int, v: Int) {
+        let rf = Double(r)/255.0
+        let gf = Double(g)/255.0
+        let bf = Double(b)/255.0
+        let maxVal = max(rf, gf, bf)
+        let minVal = min(rf, gf, bf)
+        let delta = maxVal - minVal
+
+        // Hue calculation
+        var h: Double = 0
+        if delta == 0 {
+            h = 0
+        } else if maxVal == rf {
+            h = 60 * (((gf - bf)/delta).truncatingRemainder(dividingBy: 6))
+        } else if maxVal == gf {
+            h = 60 * (((bf - rf)/delta) + 2)
+        } else if maxVal == bf {
+            h = 60 * (((rf - gf)/delta) + 4)
+        }
+        if h < 0 { h += 360 }
+
+        // Saturation calculation
+        let s: Double = maxVal == 0 ? 0 : (delta / maxVal)
+        // Value calculation
+        let v: Double = maxVal
+
+        return (h: Int(round(h)), s: Int(round(s * 100)), v: Int(round(v * 100)))
+    }
 
     
     func calculatePH() {
         do {
             let config = MLModelConfiguration()
-            let model = try CalatheaProjectPh200(configuration: config)
+            let model = try SoilpHRegressor(configuration: config)
             
-            let prediction = try model.prediction(R: Int64(redInt), G: Int64(greenInt), B: Int64(blueInt))
+            let prediction = try model.prediction(R: Double(redInt)/255, G: Double(greenInt)/255, B: Double(blueInt)/255, H: Double(hsv.h)/255, S: Double(hsv.s)/255, V: Double(hsv.v)/255 )
             
-            pH = Double(prediction.pH)
+            pH = prediction.pH_target
             
         } catch {
             // error
             print(error.localizedDescription)
         }
 
+    }
+    
+    func calculateNPK() {
+        do {
+            let config = MLModelConfiguration()
+            let modelP = try SoilPClassClassifier(configuration: config)
+            let modelN = try SoilNClassClassifier(configuration: config)
+            let modelK = try SoilKClassClassifier(configuration: config)
+            
+            let predictionP = try modelP.prediction(R: Double(redInt)/255, G: Double(greenInt)/255, B: Double(blueInt)/255, H: Double(hsv.h)/255, S: Double(hsv.s)/255, V: Double(hsv.v)/255 )
+            let predictionN = try modelN.prediction(R: Double(redInt)/255, G: Double(greenInt)/255, B: Double(blueInt)/255, H: Double(hsv.h)/255, S: Double(hsv.s)/255, V: Double(hsv.v)/255 )
+            let preditionK = try modelK.prediction(R: Double(redInt)/255, G: Double(greenInt)/255, B: Double(blueInt)/255, H: Double(hsv.h)/255, S: Double(hsv.s)/255, V: Double(hsv.v)/255 )
+            
+            nPrediction = predictionN.N_Class
+            kPrediction = preditionK.K_Class
+            pPrediction = predictionP.P_Class
+            
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }
 
