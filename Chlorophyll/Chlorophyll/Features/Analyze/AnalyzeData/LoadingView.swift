@@ -14,6 +14,10 @@ struct LoadingView: View {
     let soilMoisture: Double?
     let soilTemperature: Double?
     let soilpH: Double?
+    let nPrediction: String?
+    let pPrediction: String?
+    let kPrediction: String?
+    @State var stressPrediction: String = ""
     
     @State private var progress: CGFloat = 0.0
     @State private var percentage: Int = 0
@@ -63,8 +67,7 @@ struct LoadingView: View {
                     animateProgress(to: 1.0, duration: 4.5)
                     
                     // write to test model
-                    viewModel.predictNutrition(temp:soilMoisture, hum: humidity, moist: soilMoisture)
-                    viewModel.predictHealth(moist: soilMoisture, temp: soilTemperature, hum: humidity, soilPH: soilpH)
+                    stressPrediction = viewModel.predictStress(n: nPrediction ?? "Unidentified", p: pPrediction ?? "Unidentified", k: kPrediction ?? "Unidentified", temp: temperature ?? 0.0, humid: humidity ?? 0.0, soilpH: soilpH ?? 0.0)
                 }
 
                 Spacer()
@@ -72,10 +75,7 @@ struct LoadingView: View {
                 Spacer()
             }
             .navigationDestination(isPresented: $navigateToResult) {
-                if let nitrogenLevel = viewModel.nitrogenLevel, let phosporusLevel = viewModel.phosphorusLevel, let potassiumLevel = viewModel.potassiumLevel, let plantHealth = viewModel.plantHealth {
-                    AnalyzeView(pH: soilpH ?? 0, nitrogen: nitrogenLevel, phosphorus: phosporusLevel, potassium: potassiumLevel, plantHealth: plantHealth)
-                }
- 
+                AnalyzeView(pH: soilpH ?? 0, nitrogen: nPrediction ?? "Unidentified", phosphorus: pPrediction ?? "Unidentified", potassium: kPrediction ?? "Unidentified", stressPrediction: stressPrediction)
             }
             .navigationBarBackButtonHidden(true)
         }
@@ -105,5 +105,5 @@ struct LoadingView: View {
 
 
 #Preview {
-    LoadingView(humidity: 0.0, temperature: 0.0, soilMoisture: 0.0, soilTemperature: 0.0, soilpH: 0.0)
+    LoadingView(humidity: 0.0, temperature: 0.0, soilMoisture: 0.0, soilTemperature: 0.0, soilpH: 0.0, nPrediction: "Low", pPrediction: "Medium", kPrediction: "Low")
 }

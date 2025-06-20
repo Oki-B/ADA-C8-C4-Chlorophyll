@@ -128,12 +128,20 @@ struct ConfirmColorView: View {
                     print("Calculated PH: \(pH.formatted())")
                 }
                 
+                viewModel.calculateNPK()
+                if let nPrediction = viewModel.nPrediction,
+                   let pPrediction = viewModel.pPrediction,
+                   let kPrediction = viewModel.kPrediction {
+                    print("Calculated N: \(nPrediction)")
+                    print("Calculated P: \(pPrediction)")
+                    print("Calculated K: \(kPrediction)")
+                }
                 // navigate
                 viewModel.navigateToNextView = true
             }
             .navigationDestination(
                 isPresented: $viewModel.navigateToNextView,
-                destination: { AnswerQuestionView(soilpH: viewModel.pH) }
+                destination: { AnswerQuestionView(soilpH: viewModel.pH, nPrediction: viewModel.nPrediction, pPrediction: viewModel.pPrediction, kPrediction: viewModel.kPrediction) }
             )
 
         }

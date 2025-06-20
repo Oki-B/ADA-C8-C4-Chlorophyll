@@ -94,4 +94,60 @@ class AnalyzeDataViewModel: ObservableObject {
             print("Error loading model: \(error.localizedDescription)")
         }
     }
+    
+    func predictStress(n:String, p: String, k: String, temp: Double, humid: Double, soilpH: Double) -> String {
+        var total_ideal : Int = 0
+        
+        if temp >= 16 && temp <= 30 {
+            total_ideal = total_ideal + 1
+        }
+        
+        if humid >= 50 && humid <= 70 {
+            total_ideal = total_ideal + 1
+        }
+        
+        if soilpH >= 5.5 && soilpH <= 7 {
+            total_ideal = total_ideal + 1
+        }
+        
+        if n != "Low" {
+            total_ideal = total_ideal + 1
+        }
+        
+        if p != "Low" {
+            total_ideal = total_ideal + 1
+        }
+        
+        if k != "Low" {
+            total_ideal = total_ideal + 1
+        }
+        
+        if total_ideal >= 5 && total_ideal <= 6 {
+            return "Healthy"
+        } else if total_ideal >= 2 && total_ideal <= 4 {
+            return "Moderate Stress"
+        } else {
+            return "High Stress"
+        }
+    }
+    
+    func getImage(stress: String) -> String {
+        if stress == "High Stress" {
+            return "stress"
+        } else if stress == "Moderate Stress" {
+            return "mid"
+        } else {
+            return "happy"
+        }
+    }
+    
+    func contentResult(stress: String) -> String {
+        if stress == "High Stress" {
+            return "Poor soil condition, roots struggling—Calathea deeply stressed, needs care. 🛠️"
+        } else if stress == "Moderate Stress" {
+            return "Soil needs care—too dry or wet, Calathea feeling stressed. 💧"
+        } else {
+            return "Moist, balanced soil—your Calathea likely happy and thriving! 🌱"
+        }
+    }
 }

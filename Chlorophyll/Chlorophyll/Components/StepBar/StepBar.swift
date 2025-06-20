@@ -56,7 +56,11 @@ struct StepCircle: View {
     
     var color: Color {
         if isActive {
-            return .midGreenYellow300.opacity(0.4)
+            if number == 1 {
+                return .cultured300
+            } else {
+                return .midGreenYellow300.opacity(0.4)
+            }
         } else if isDone {
             return .midGreenYellow500
         } else {

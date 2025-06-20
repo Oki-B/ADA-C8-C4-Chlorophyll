@@ -15,6 +15,9 @@ struct AnswerQuestionView: View {
     @State var optionChoose: Int = 1
     @State private var navigatetoResult: Bool = false
     @State private var isDisabled: Bool = true
+    let nPrediction: String?
+    let pPrediction: String?
+    let kPrediction: String?
 
     var body: some View {
         NavigationStack {
@@ -32,7 +35,7 @@ struct AnswerQuestionView: View {
                             Text("\(viewModel.locationName)")
                                 .font(.title3)
                                 .bold()
-//                                .foregroundStyle(.darkCharcoal300)
+
                             Text("My Location")
                                 .font(.caption)
                                 .foregroundStyle(.cultured500)
@@ -178,7 +181,7 @@ struct AnswerQuestionView: View {
                             temperature: viewModel.temperature,
                             soilMoisture: viewModel.soilMoisturePrediction,
                             soilTemperature: viewModel.soilTempPrediction,
-                            soilpH: soilpH
+                            soilpH: soilpH, nPrediction: nPrediction ?? "Unidentifed", pPrediction: pPrediction ?? "Unidentifed", kPrediction: kPrediction ?? "Unidentifed"
                         )
                     }
                 )
@@ -209,5 +212,5 @@ struct AnswerQuestionView: View {
 }
 
 #Preview {
-    AnswerQuestionView(soilpH: 6.98)
+    AnswerQuestionView(soilpH: 6.98, nPrediction: "Low", pPrediction: "Low", kPrediction: "High")
 }

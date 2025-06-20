@@ -17,6 +17,9 @@ class ConfirmColorViewModel: ObservableObject {
     @Published var greenInt: Int = 0
     @Published var blueInt: Int = 0
     @Published var hsv: (h: Int, s: Int, v: Int) = (0, 0, 0)
+    @Published var nPrediction: String? = nil
+    @Published var pPrediction: String? = nil
+    @Published var kPrediction: String? = nil
     
     // view control
     @Published var navigateToNextView: Bool = false
@@ -283,6 +286,26 @@ class ConfirmColorViewModel: ObservableObject {
             print(error.localizedDescription)
         }
 
+    }
+    
+    func calculateNPK() {
+        do {
+            let config = MLModelConfiguration()
+            let modelP = try SoilPClassClassifier(configuration: config)
+            let modelN = try SoilNClassClassifier(configuration: config)
+            let modelK = try SoilKClassClassifier(configuration: config)
+            
+            let predictionP = try modelP.prediction(R: Double(redInt)/255, G: Double(greenInt)/255, B: Double(blueInt)/255, H: Double(hsv.h)/255, S: Double(hsv.s)/255, V: Double(hsv.v)/255 )
+            let predictionN = try modelN.prediction(R: Double(redInt)/255, G: Double(greenInt)/255, B: Double(blueInt)/255, H: Double(hsv.h)/255, S: Double(hsv.s)/255, V: Double(hsv.v)/255 )
+            let preditionK = try modelK.prediction(R: Double(redInt)/255, G: Double(greenInt)/255, B: Double(blueInt)/255, H: Double(hsv.h)/255, S: Double(hsv.s)/255, V: Double(hsv.v)/255 )
+            
+            nPrediction = predictionN.N_Class
+            kPrediction = preditionK.K_Class
+            pPrediction = predictionP.P_Class
+            
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }
 
